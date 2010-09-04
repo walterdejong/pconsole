@@ -1,0 +1,38 @@
+dnl Process this file with autoconf to produce a configure script.
+dnl
+dnl	pconsole configure.in	WJ101
+dnl	(mostly created with autoscan, modifications by Walter de Jong <walter@heiho.net>)
+dnl
+AC_INIT(pconsole.c)
+
+dnl Checks for programs
+AC_PROG_AWK
+AC_PROG_CC
+AC_PROG_INSTALL
+
+dnl Checks for header files
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h sys/ioctl.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics
+AC_C_CONST
+AC_STRUCT_ST_RDEV
+
+dnl Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+AC_TYPE_SIGNAL
+AC_CHECK_FUNCS(strchr strdup strerror memset)
+
+dnl special compiler options for gcc
+if test "$GCC" = "yes" ;
+then
+	CCOPTS='-O2 -Wall -Wstrict-prototypes -fomit-frame-pointer'
+else
+	CCOPTS='-O'
+fi
+CFLAGS="$CCOPTS"
+
+AC_CONFIG_HEADER(config.h)
+AC_OUTPUT(Makefile pconsole.sh)
+
+dnl EOB

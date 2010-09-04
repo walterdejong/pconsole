@@ -1,0 +1,160 @@
+#! /bin/sh
+#
+#   pconsole WJ101
+#   Copyright (C) 2001  Walter de Jong <walter@heiho.net>
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#	pconsole.sh	WJ101
+#
+#	Open windows and have pconsole attach to them
+#	NOTE: ssh is weird and it doesn't work without the ssh.sh wrapper script
+#
+
+# Change to "1" or "yes" to enable debugging
+DEBUG=""
+
+if [ ! -z "${DEBUG}" ]
+then
+	set -x
+fi
+
+PATH=/bin:/usr/bin:/usr/bin/X11:/usr/openwin/bin:/usr/local/bin:/usr/bsd:/usr/share/bin:/opt/bin:/etc:/usr/etc
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+
+#
+#	options: you can overrule these by setting them in your environment
+#
+if [ -z "${P_TERM}" ]
+then
+	P_TERM=xterm
+fi
+if [ -z "${P_TERM_OPTIONS}" ]
+then
+	P_TERM_OPTIONS="-geometry 40x12 -fn 5x7"
+fi
+if [ -z "${P_CONNECT_CMD}" ]
+then
+	P_CONNECT_CMD="${bindir}/ssh.sh"
+fi
+if [ -z "${P_CONSOLE_OPTIONS}" ]
+then
+	P_CONSOLE_OPTIONS="-geometry 60x12"
+fi
+
+
+#
+#	get tty
+#	Mind that ps output may be platform dependent
+#	If so, you have to adjust this function
+#
+#	What it does is get the tty that has the parent pid equal to the pid of
+#	the xterm we launched
+#
+function get_tty {
+	if [ ! -z "${DEBUG}" ]
+	then
+		set -x
+	fi
+
+	PS_PERSONALITY=posix		# may be needed for GNU ps :P
+	ps -ef 2>/dev/null | awk '{ print $3 " " $6 }' | egrep "^$1" | awk '{ print $2 }'
+}
+
+
+#
+#	main
+#
+if [ -z "$1" ]
+then
+	PROG=`basename $0`
+	echo "usage: ${PROG}" '<hostname>[:port] [...]'
+	exit 1
+fi
+
+THIS_TTY=`tty`
+
+#
+#	run this in a sub-shell so the user gets the prompt back
+#	We start all windows, give them some time to initialize, and then get all
+#	ttys that have those (parent) pids
+#	Then we combine the host#tty pairs, and give that to the pconsole binary
+#
+(
+	if [ ! -z "${DEBUG}" ]
+	then
+		set -x
+	fi
+
+	HOSTLIST="$*"
+	for HOST in ${HOSTLIST}
+	do
+# get optional port number
+		PORT=`echo "${HOST}" | cut -d: -f2`
+		HOSTNAME=`echo "${HOST}" | cut -d: -f1`
+		if [ "${PORT}" = "${HOSTNAME}" ];
+		then
+			PORT=''
+		fi
+
+# open windows
+		${P_TERM} ${P_TERM_OPTIONS} -title "pconsole: ${HOST}" -name "pconsole: ${HOST}" -e ${P_CONNECT_CMD} ${HOSTNAME} ${PORT} &
+		PID=$!
+		PIDLIST="${PIDLIST} ${PID}"
+	done
+
+	for PID in ${PIDLIST}
+	do
+		TTY=''
+		while [ -z "${TTY}" ]
+		do
+			TTY=`get_tty "${PID}"`
+
+# sometimes xterm is too slow forking off, and get_tty will give the same
+# tty as we started from. This would be incorrect, and if so, we try again
+			if [ "/dev/${TTY}" = "${THIS_TTY}" ];
+			then
+				TTY=''
+				sleep 1
+			fi
+		done
+
+		HOST=`echo ${HOSTLIST} | cut -d\  -f1`
+		HOSTLIST=`echo ${HOSTLIST} | cut -d\  -f2-999`
+		if [ ! -z "${HOST}" ]
+		then
+			TTYS="${TTYS} ${HOST}#/dev/${TTY}"
+		else
+			TTYS="${TTYS} /dev/${TTY}"
+		fi
+	done
+
+# start pconsole
+	${P_TERM} ${P_CONSOLE_OPTIONS} -title pconsole -name pconsole -e "${bindir}/pconsole" ${TTYS}
+
+# terminate all open windows
+	if [ ! -z "${PIDLIST}" ]
+	then
+		kill ${PIDLIST} >/dev/null 2>&1
+	fi
+	exit 0
+) &
+
+exit 0
+
+# EOB
