@@ -41,6 +41,10 @@
 
 #include <sys/termios.h>
 
+#ifndef TIOCSTI
+#define TIOCSTI	0x5412
+#endif
+
 #define KEY_CTRL(x)		((x) - 'A' + 1)
 
 int flags = FLAGS_ECHO;
