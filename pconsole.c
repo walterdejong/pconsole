@@ -28,6 +28,7 @@
 #include "Conn.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
@@ -37,6 +38,8 @@
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
+
+#include <sys/termios.h>
 
 #define KEY_CTRL(x)		((x) - 'A' + 1)
 
