@@ -31,7 +31,12 @@ if [ -z "${SSH}" ]
 then
 	telnet $*
 else
-	ssh $*
+    if [ -z "$2" ]
+    then 
+        ssh $*
+    else
+        ssh $1 -p $2
+    fi
 fi
 
 # EOB
