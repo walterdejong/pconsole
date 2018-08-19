@@ -166,7 +166,7 @@ int cmd_version(char **argv) {
 		"This is free software with ABSOLUTELY NO WARRANTY.\n"
 		"For details type 'help warranty'.\n"
 		"\n"
-		"The distribution page is at http://www.heiho.net/pconsole/\n"
+		"The distribution page is at https://walterdejong.github.io/pconsole/\n"
 	);
 	return 0;
 }
