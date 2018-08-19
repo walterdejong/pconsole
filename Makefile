@@ -36,7 +36,7 @@ INSTALL_SCRIPT = /usr/bin/install -c -m 0750
 INSTALL_DATA = /usr/bin/install -c -m 0640
 
 .c.o:
-	$(CC) -I$(INCLUDE) $(CFLAGS) -c $<
+	$(CC) -I$(INCLUDE) -I. $(CFLAGS) -c $<
 
 OBJS = List.o Conn.o cstring.o terminal.o commands.o pconsole.o
 
