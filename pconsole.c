@@ -59,7 +59,7 @@ char buf[256], *p;
 	fflush(stdout);
 
 	flags |= FLAGS_CMD_MODE;
-
+	/* clearerr(stdin); */ // or maybe here?
 	while((p = fgets(buf, 256, stdin)) != NULL) {
 		cstrip_line(buf);
 		if (*buf)
@@ -80,6 +80,7 @@ char buf[256], *p;
 			exit(0);
 		} else
 			printf("<Ctrl-D>\n");
+		clearerr(stdin);
 	}
 	flags &= ~FLAGS_CMD_MODE;
 
