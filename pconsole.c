@@ -92,6 +92,8 @@ char buf[256], *p;
 }
 
 int put_conn(Conn *c, char kar) {
+int err, saved_errno;
+
 	errno = 0;
 	if (c == NULL) {
 		errno = EINVAL;
@@ -106,8 +108,8 @@ int put_conn(Conn *c, char kar) {
 	}
 
 	/* simulate terminal input */
-	int err = ioctl(c->fd, TIOCSTI, &kar);
-	int saved_errno = errno;
+	err = ioctl(c->fd, TIOCSTI, &kar);
+	saved_errno = errno;
 
 	/* drop root privs again */
 	if (seteuid(getuid())) {
