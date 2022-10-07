@@ -1,0 +1,12 @@
+.depend
+.vscode
+*.o
+*~
+.swp
+*.swp
+pconsole
+pconsole.sh
+config.cache
+config.h
+config.log
+config.status
