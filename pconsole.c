@@ -163,18 +163,33 @@ Conn *c, *c_next;
 			c_next = c->next;
 
 			if (c->fd > 0) {
-				seteuid(0);											/* regain root privs */
+				if (seteuid(0)) {									/* regain root privs */
+					fprintf(stderr, "failed to regain root privs: %s\n", strerror(errno));
+					cmd_exit(NULL);
+					/* unreached */
+				}
 				if (ioctl(c->fd, TIOCSTI, &kar) == -1) {			/* simulate terminal input */
-					seteuid(getuid());								/* drop root privs again */
-					printf("\nioctl() : %s\n", strerror(errno));
+					int saved_errno = errno;
+
+					if (seteuid(getuid())) {						/* drop root privs again */
+						fprintf(stderr, "failed to drop root privs: %s\n", strerror(errno));
+						cmd_exit(NULL);
+						/* unreached */
+					}
+					printf("\nioctl() : %s\n", strerror(saved_errno));
 					if (c->hostname != NULL)
 						printf("detaching from %s#%s\n", c->hostname, c->dev);
 					else
 						printf("detaching from %s\n", c->dev);
 					remove_Conn(c);
 					destroy_Conn(c);
-				} else
-					seteuid(getuid());								/* drop the root privs */
+				} else {
+					if (seteuid(getuid())) {						/* drop the root privs */
+						fprintf(stderr, "failed to drop root privs: %s\n", strerror(errno));
+						cmd_exit(NULL);
+						/* unreached */
+					}
+				}
 			}
 		}
 		if (AllConns == NULL)
