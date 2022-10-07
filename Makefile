@@ -74,7 +74,7 @@ mrproper: clean
 	touch .depend
 
 depend dep .depend:
-	$(CC) -I$(INCLUDE) -M $(CFILES) > .depend
+	$(CC) -I$(INCLUDE) -I. -M $(CFILES) > .depend
 
 
 install: all
