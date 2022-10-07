@@ -297,7 +297,7 @@ Conn *c;
 	open the device
 */
 		if ((c->fd = open(devname, O_RDWR)) == -1) {
-			printf("%s\n", strerror(errno));
+			fprintf(stderr, "open %s: %s\n", devname, strerror(errno));
 			destroy_Conn(c);
 			continue;
 		}
