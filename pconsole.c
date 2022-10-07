@@ -90,6 +90,39 @@ char buf[256], *p;
 	terminal_mode(TERMINAL_RAW);
 }
 
+int put_conn(Conn *c, char kar) {
+	errno = 0;
+	if (c == NULL) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	/* regain root privs */
+	if (seteuid(0)) {
+		fprintf(stderr, "failed to regain root privs: %s\n", strerror(errno));
+		cmd_exit(NULL);
+		/* unreached */
+	}
+
+	/* simulate terminal input */
+	int err = ioctl(c->fd, TIOCSTI, &kar);
+	int saved_errno = errno;
+
+	/* drop root privs again */
+	if (seteuid(getuid())) {
+		fprintf(stderr, "failed to drop root privs: %s\n", strerror(errno));
+		cmd_exit(NULL);
+		/* unreached */
+	}
+
+	if (err == -1) {
+		fprintf(stderr, "\nioctl() : %s\n", strerror(saved_errno));
+		errno = saved_errno;
+		return -1;
+	}
+	return 0;
+}
+
 void pconsole(void) {
 int key, typed = 0;
 char kar;
@@ -163,32 +196,13 @@ Conn *c, *c_next;
 			c_next = c->next;
 
 			if (c->fd > 0) {
-				if (seteuid(0)) {									/* regain root privs */
-					fprintf(stderr, "failed to regain root privs: %s\n", strerror(errno));
-					cmd_exit(NULL);
-					/* unreached */
-				}
-				if (ioctl(c->fd, TIOCSTI, &kar) == -1) {			/* simulate terminal input */
-					int saved_errno = errno;
-
-					if (seteuid(getuid())) {						/* drop root privs again */
-						fprintf(stderr, "failed to drop root privs: %s\n", strerror(errno));
-						cmd_exit(NULL);
-						/* unreached */
-					}
-					printf("\nioctl() : %s\n", strerror(saved_errno));
+				if (put_conn(c, kar) == -1) {
 					if (c->hostname != NULL)
 						printf("detaching from %s#%s\n", c->hostname, c->dev);
 					else
 						printf("detaching from %s\n", c->dev);
 					remove_Conn(c);
 					destroy_Conn(c);
-				} else {
-					if (seteuid(getuid())) {						/* drop the root privs */
-						fprintf(stderr, "failed to drop root privs: %s\n", strerror(errno));
-						cmd_exit(NULL);
-						/* unreached */
-					}
 				}
 			}
 		}
