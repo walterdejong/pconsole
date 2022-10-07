@@ -23,7 +23,7 @@
 #ifndef PCONSOLE_H_WJ101
 #define PCONSOLE_H_WJ101	1
 
-#define VERSION			"1.1"
+#define VERSION			"1.2.0"
 
 #define FLAGS_ECHO		1
 #define FLAGS_CMD_MODE	2
