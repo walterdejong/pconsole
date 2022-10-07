@@ -20,7 +20,7 @@
 #	pconsole Makefile.in	WJ101
 #
 
-prefix = .
+prefix = /home/walter/.local
 exec_prefix = ${prefix}
 bindir = ${exec_prefix}/bin
 
@@ -87,7 +87,7 @@ install: all
 		echo ;	\
 		echo "Note: You may want to make pconsole setuid root with the following commands:";	\
 		echo ;	\
-		echo "   chown root $(bindir)/pconsole ; chmod 4110 $(bindir)/pconsole" ; \
+		echo "   sudo chown root $(bindir)/pconsole && sudo chmod 4110 $(bindir)/pconsole" ; \
 		echo \
 	)
 
