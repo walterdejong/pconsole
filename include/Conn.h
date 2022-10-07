@@ -30,6 +30,8 @@
 #include <sys/types.h>
 #endif
 
+#include <stddef.h>
+
 typedef struct Conn_tag Conn;
 
 struct Conn_tag {
@@ -58,6 +60,8 @@ Conn *find_Conn_by_hostname(char *);
 #ifdef HAVE_ST_RDEV
 Conn *find_Conn_by_rdev(dev_t);
 #endif
+
+int write_Conn(Conn *, void *, size_t);
 
 #endif	/* CONN_H_WJ101 */
 

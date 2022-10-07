@@ -218,7 +218,8 @@ int cmd_connect(char **argv) {
 }
 
 int cmd_attach(char **argv) {
-int i, len;
+int i;
+size_t len;
 char *tty, *devname, buf[256];
 struct stat ttystat, ttystat2;
 Conn *c;
@@ -303,13 +304,18 @@ Conn *c;
 		}
 		add_Conn(c);
 		printf("Ok\n");
-		write(c->fd, buf, len);		/* tell target we're attached */
+		/* tell target we're attached */
+		if (write_Conn(c, buf, len) == -1) {
+			destroy_Conn(c);
+			continue;
+		}
 	}
 	return 0;
 }
 
 int cmd_detach(char **argv) {
-int i, len;
+int i;
+size_t len;
 char *tty, buf[256];
 Conn *c;
 
@@ -333,9 +339,7 @@ Conn *c;
 			else
 				printf("detaching from %s : ", c->dev);
 
-			if (c->fd > 0)
-				write(c->fd, buf, len);
-
+			write_Conn(c, buf, len);
 			remove_Conn(c);
 			destroy_Conn(c);
 			printf("Ok\n");

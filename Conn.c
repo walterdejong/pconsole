@@ -100,4 +100,28 @@ Conn *c;
 }
 #endif
 
+int write_Conn(Conn *c, void *buf, size_t len) {
+ssize_t n;
+
+	if (c == NULL) {
+		/* ignore (not a hard error) */
+		return 0;
+	}
+	if (c->fd <= 0) {
+		/* ignore (not a hard error) */
+		return 0;
+	}
+
+	while (len > 0) {
+		n = write(c->fd, buf, len);
+		if (n == -1) {
+			/* write() error (silent) */
+			return -1;
+		}
+		len -= n;
+		buf += n;
+	}
+	return 0;
+}
+
 /* EOB */
