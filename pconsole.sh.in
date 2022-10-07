@@ -66,7 +66,7 @@ fi
 #	What it does is get the tty that has the parent pid equal to the pid of
 #	the xterm we launched
 #
-function get_tty {
+get_tty() {
 	if [ ! -z "${DEBUG}" ]
 	then
 		set -x
